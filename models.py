@@ -35,24 +35,18 @@ class CNN(nn.Module):
             nn.Linear(in_features=21504, out_features=2048),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(in_features=2048, out_features=2048),
+            nn.Linear(in_features=2048, out_features=1600),
             nn.ReLU(),
             nn.Dropout(),
-            nn.Linear(in_features=2048, out_features=1600)
+            nn.Linear(in_features=1600, out_features=1600)
         )
 
 
     def forward(self, x):
-        # x = F.relu(F.max_pool2d(self.conv1(x), 2))
-        # x = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x)), 2))
-        # print("in", x.shape) # [4, 1, 20, 62] = [batch,channel,height,width]
+
         x = self.features(x) # [4, 256, 7, 12]
         x = x.view(x.size(0), -1) # [4, 21504]
         x = self.features2(x) # [4, 1600]
-        # x = F.relu(self.fc1(x))
-        # x = F.dropout(x, training=self.training)
-        # x = self.fc2(x)
-        # return F.log_softmax(x, dim=1)
         return x
 
 
@@ -77,13 +71,6 @@ class Combine(nn.Module):
         r_out, _ = self.rnn(r_in) # rnn out [4, 10, 64]
         r_out2 = self.fc(r_out) #  [4, 10, 4]
         # print("rnn_out : ",r_out.shape)
-        # s, b, h = r_out.shape  # r_out is output, size (seq_len, batch, hidden_size)
-        # print(s,b,h)
-        # r_out = r_out.contiguous().view(s * b, h)
-        # print(r_out.shape)
-        # r_out = self.fc(r_out)
-        # print(r_out.shape)
-        # r_out = r_out.view(s, b, -1)
-        # print(r_out2.shape)
+       
         return r_out2 #F.log_softmax(r_out2, dim=2)
 

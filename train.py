@@ -32,7 +32,7 @@ def train():
     model.train()
 
     best_model_params = copy.deepcopy(model.state_dict())
-    best_acc = 0.0
+    best = 0.0
     num_epochs = 200
     criterion = nn.CrossEntropyLoss() #criterion = nn.MSELoss()
     # optimizer = torch.optim.SGD(params=model.parameters(), lr=0.001, momentum=0.9)
@@ -49,9 +49,9 @@ def train():
             # labels = torch.Tensor([list(item) for item in labels])
             labels=np.array(labels).astype(int)
             labels=torch.from_numpy(labels)
-            labels=torch.tensor(labels,dtype=torch.int64)
+            # labels=torch.tensor(labels,dtype=torch.int64)
 
-            # labels = labels.type(torch.LongTensor)
+            labels = labels.type(torch.LongTensor)
 
             
             inputs = Variable(inputs.cuda(CUDA_DEVICES))
@@ -61,28 +61,28 @@ def train():
 
             outputs = model(inputs)
             # print("output size: " ,outputs.shape)
-            _, preds = torch.max(outputs.data, 2)
+            _, preds = torch.max(outputs.data, 1)
             # print("pred size: ",preds.shape)
 
-            loss = criterion(preds, labels)
+            loss = criterion(outputs, labels)
 
             loss.backward()
             optimizer.step()
 
             training_loss += loss.item() * inputs.size(0)
-            training_corrects += torch.sum(preds == labels.data) ##revise
+            # training_corrects += torch.sum(preds == labels.data) ##revise
 
         training_loss = training_loss / len(train_set)
-        training_acc = training_corrects.double() / len(train_set) 
+        # training_acc = training_corrects.double() / len(train_set) 
 
-        print(f'Training loss: {training_loss:.4f}\taccuracy: {training_acc:.4f}\n')
+        print(f'Training loss: {training_loss:.4f}\n')
 
-        if training_acc > best_acc:
-            best_acc = training_acc
+        if training_loss > best:
+            best = training_loss
             best_model_params = copy.deepcopy(model.state_dict())
 
     model.load_state_dict(best_model_params)
-    torch.save(model, f'model-{best_acc:.02f}-best_train_acc.pth')
+    torch.save(model, f'model-{best:.02f}-best_train_acc.pth')
     return model
 
 
